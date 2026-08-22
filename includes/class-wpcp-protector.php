@@ -51,6 +51,9 @@ class WPCP_Protector
 
         wp_enqueue_style('wpcp-protector', WPCP_URL . 'assets/css/wpcp-protector.css', array(), WPCP_VERSION);
         wp_enqueue_script('wpcp-protector', WPCP_URL . 'assets/js/wpcp-protector.js', array(), WPCP_VERSION, true);
+        wp_localize_script('wpcp-protector', 'wpcpSettings', array(
+            'protections' => $this->options['protections'],
+        ));
     }
 
 }
