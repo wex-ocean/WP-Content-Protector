@@ -3,10 +3,6 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-if ( is_admin() ) {
-    new WPCP_Admin();
-}
-
 class WPCP_Admin {
 
     public function __construct() {

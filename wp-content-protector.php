@@ -10,6 +10,12 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+if ( is_admin() ) {
+    new WPCP_Admin();
+}
+
+new WPCP_Protector();
+
 define( 'WPCP_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WPCP_URL', plugin_dir_url( __FILE__ ) );
 
