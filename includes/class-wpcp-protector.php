@@ -15,11 +15,12 @@ class WPCP_Protector {
     private function should_protect() {
         return true; // real logic comes later
     }
-
     public function maybe_enqueue_assets() {
-        if ( ! $this->should_protect() ) {
-            return;
-        }
-        // enqueue calls come next step
+    if ( ! $this->should_protect() ) {
+        return;
     }
+
+    wp_enqueue_style( 'wpcp-protector', WPCP_URL . 'assets/css/wpcp-protector.css', array(), WPCP_VERSION );
+    wp_enqueue_script( 'wpcp-protector', WPCP_URL . 'assets/js/wpcp-protector.js', array(), WPCP_VERSION, true );
+}
 }

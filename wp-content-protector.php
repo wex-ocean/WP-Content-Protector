@@ -9,6 +9,7 @@
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
+define( 'WPCP_VERSION', '1.0.0' );
 
 if ( is_admin() ) {
     new WPCP_Admin();
