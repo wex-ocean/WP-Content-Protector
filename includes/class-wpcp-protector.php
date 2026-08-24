@@ -7,13 +7,6 @@ class WPCP_Protector
 {
 
     private $options;
-
-    public function __construct()
-    {
-        $this->options = wpcp_get_options();
-        add_action('wp_enqueue_scripts', array($this, 'maybe_enqueue_assets'));
-    }
-
     private function should_protect()
     {
         if (is_admin() || is_feed()) {
@@ -43,16 +36,45 @@ class WPCP_Protector
 
         return true;
     }
+    // public function maybe_enqueue_assets()
+    // {
+    //     if (!$this->should_protect()) {
+    //         return;
+    //     }
+
+    //     wp_enqueue_style('wpcp-protector', WPCP_URL . 'assets/css/wpcp-protector.css', array(), WPCP_VERSION);
+    //     wp_enqueue_script('wpcp-protector', WPCP_URL . 'assets/js/wpcp-protector.js', array(), WPCP_VERSION, true);
+    //     wp_localize_script('wpcp-protector', 'wpcpSettings', array(
+    //         'protections' => $this->options['protections'],
+    //     ));
+    // }
+
+    public function __construct()
+    {
+        $this->options = wpcp_get_options();
+        add_filter('body_class', array($this, 'maybe_add_body_class'));
+        add_action('wp_enqueue_scripts', array($this, 'maybe_enqueue_assets'));
+    }
+
+    public function maybe_add_body_class($classes)
+    {
+        if ($this->should_protect() && !empty($this->options['protections']['disable_text_select'])) {
+            $classes[] = 'wpcp-no-select';
+        }
+        return $classes;
+    }
+
     public function maybe_enqueue_assets()
     {
-        if (!$this->should_protect()) {
+        if (!$this->should_protect())
             return;
-        }
 
         wp_enqueue_style('wpcp-protector', WPCP_URL . 'assets/css/wpcp-protector.css', array(), WPCP_VERSION);
         wp_enqueue_script('wpcp-protector', WPCP_URL . 'assets/js/wpcp-protector.js', array(), WPCP_VERSION, true);
         wp_localize_script('wpcp-protector', 'wpcpSettings', array(
             'protections' => $this->options['protections'],
+            'showMessage' => !empty($this->options['show_message']),
+            'customMessage' => $this->options['custom_message'],
         ));
     }
 
