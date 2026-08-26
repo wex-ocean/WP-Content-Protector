@@ -9,21 +9,20 @@
 if (!defined('ABSPATH')) {
     exit;
 }
-define('WPCP_VERSION', '1.0.0');
+define('WPCP_CONTENT_PROTECTOR_VERSION', '1.0.0');
+define('WPCP_CONTENT_PROTECTOR_PATH', plugin_dir_path(__FILE__));
+define('WPCP_CONTENT_PROTECTOR_URL', plugin_dir_url(__FILE__));
+
+require_once WPCP_CONTENT_PROTECTOR_PATH . 'includes/class-wpcp-admin.php';
+require_once WPCP_CONTENT_PROTECTOR_PATH . 'includes/class-wpcp-protector.php';
 
 if (is_admin()) {
-    new WPCP_Admin();
+    new WPCP_Content_Protector_Admin();
 }
 
-new WPCP_Protector();
+new WPCP_Content_Protector();
 
-define('WPCP_PATH', plugin_dir_path(__FILE__));
-define('WPCP_URL', plugin_dir_url(__FILE__));
-
-require_once WPCP_PATH . 'includes/class-wpcp-admin.php';
-require_once WPCP_PATH . 'includes/class-wpcp-protector.php';
-
-function wpcp_default_options()
+function wpcp_content_protector_default_options()
 {
     return array(
         // 'protections' => array(
@@ -52,16 +51,20 @@ function wpcp_default_options()
     );
 }
 
-function wpcp_activate()
+function wpcp_content_protector_activate()
 {
     if (false === get_option('wpcp_options')) {
-        add_option('wpcp_options', wpcp_default_options());
+        add_option('wpcp_options', wpcp_content_protector_default_options());
     }
 }
-register_activation_hook(__FILE__, 'wpcp_activate');
+register_activation_hook(__FILE__, 'wpcp_content_protector_activate');
 
-function wpcp_get_options()
+function wpcp_content_protector_get_options()
 {
     $saved = get_option('wpcp_options', array());
-    return wp_parse_args($saved, wpcp_default_options());
+    $defaults = wpcp_content_protector_default_options();
+    $saved = is_array($saved) ? $saved : array();
+    $saved['protections'] = isset($saved['protections']) && is_array($saved['protections']) ? $saved['protections'] : array();
+    $saved['protections'] = wp_parse_args($saved['protections'], $defaults['protections']);
+    return wp_parse_args($saved, $defaults);
 }

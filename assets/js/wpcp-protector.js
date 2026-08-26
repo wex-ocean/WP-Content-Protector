@@ -1,37 +1,21 @@
-// console.log( 'WP Content Protector loaded' );
-// ( function () {
-//     if ( typeof wpcpSettings === 'undefined' ) return;
-//     var p = wpcpSettings.protections;
-
-//     if ( p.disable_right_click ) {
-//         document.addEventListener( 'contextmenu', function ( e ) {
-//             e.preventDefault();
-//         } );
-//     }
-
-//     if ( p.disable_copy ) {
-//         document.addEventListener( 'copy', function ( e ) {
-//             e.preventDefault();
-//         } );
-//     }
-// } )();
-
-
 ( function () {
     'use strict';
-    if ( typeof wpcpSettings === 'undefined' ) return;
-    var p = wpcpSettings.protections || {};
+    if ( typeof wpcpContentProtectorSettings === 'undefined' ) return;
+    if ( window.wpcpContentProtectorInitialized ) return;
+    window.wpcpContentProtectorInitialized = true;
+    var settings = wpcpContentProtectorSettings;
+    var p = settings.protections || {};
     var msgTimeout = null;
 
     function showMessage() {
-        if ( ! wpcpSettings.showMessage || ! wpcpSettings.customMessage ) return;
+        if ( ! settings.showMessage || ! settings.customMessage || ! document.body ) return;
         var el = document.querySelector( '.wpcp-message' );
         if ( ! el ) {
             el = document.createElement( 'div' );
             el.className = 'wpcp-message';
             document.body.appendChild( el );
         }
-        el.textContent = wpcpSettings.customMessage;
+        el.textContent = settings.customMessage;
         void el.offsetWidth;
         el.classList.add( 'wpcp-visible' );
         clearTimeout( msgTimeout );

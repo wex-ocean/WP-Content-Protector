@@ -3,7 +3,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class WPCP_Protector
+class WPCP_Content_Protector
 {
 
     private $options;
@@ -13,7 +13,7 @@ class WPCP_Protector
             return false;
         }
 
-        if (empty(array_filter($this->options['protections']))) {
+        if (empty(array_filter((array) $this->options['protections']))) {
             return false;
         }
 
@@ -29,29 +29,16 @@ class WPCP_Protector
             return false;
         }
 
-        $excluded_ids = array_filter(array_map('trim', explode(',', $this->options['excluded_post_ids'])));
-        if (is_singular() && in_array((string) get_the_ID(), $excluded_ids, true)) {
+        $excluded_ids = array_filter(array_map('absint', explode(',', (string) $this->options['excluded_post_ids'])));
+        if (is_singular() && in_array(absint(get_the_ID()), $excluded_ids, true)) {
             return false;
         }
 
         return true;
     }
-    // public function maybe_enqueue_assets()
-    // {
-    //     if (!$this->should_protect()) {
-    //         return;
-    //     }
-
-    //     wp_enqueue_style('wpcp-protector', WPCP_URL . 'assets/css/wpcp-protector.css', array(), WPCP_VERSION);
-    //     wp_enqueue_script('wpcp-protector', WPCP_URL . 'assets/js/wpcp-protector.js', array(), WPCP_VERSION, true);
-    //     wp_localize_script('wpcp-protector', 'wpcpSettings', array(
-    //         'protections' => $this->options['protections'],
-    //     ));
-    // }
-
     public function __construct()
     {
-        $this->options = wpcp_get_options();
+        $this->options = wpcp_content_protector_get_options();
         add_filter('body_class', array($this, 'maybe_add_body_class'));
         add_action('wp_enqueue_scripts', array($this, 'maybe_enqueue_assets'));
     }
@@ -69,9 +56,9 @@ class WPCP_Protector
         if (!$this->should_protect())
             return;
 
-        wp_enqueue_style('wpcp-protector', WPCP_URL . 'assets/css/wpcp-protector.css', array(), WPCP_VERSION);
-        wp_enqueue_script('wpcp-protector', WPCP_URL . 'assets/js/wpcp-protector.js', array(), WPCP_VERSION, true);
-        wp_localize_script('wpcp-protector', 'wpcpSettings', array(
+        wp_enqueue_style('wpcp-content-protector', WPCP_CONTENT_PROTECTOR_URL . 'assets/css/wpcp-protector.css', array(), WPCP_CONTENT_PROTECTOR_VERSION);
+        wp_enqueue_script('wpcp-content-protector', WPCP_CONTENT_PROTECTOR_URL . 'assets/js/wpcp-protector.js', array(), WPCP_CONTENT_PROTECTOR_VERSION, true);
+        wp_localize_script('wpcp-content-protector', 'wpcpContentProtectorSettings', array(
             'protections' => $this->options['protections'],
             'showMessage' => !empty($this->options['show_message']),
             'customMessage' => $this->options['custom_message'],

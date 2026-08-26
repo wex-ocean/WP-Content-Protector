@@ -3,7 +3,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class WPCP_Admin
+class WPCP_Content_Protector_Admin
 {
 
     public function __construct()
@@ -53,14 +53,21 @@ class WPCP_Admin
 
     public function sanitize_options($input)
     {
+        if (!current_user_can('manage_options')) {
+            return wpcp_content_protector_get_options();
+        }
+
+        $input = is_array($input) ? $input : array();
         $output = array();
         foreach (array_keys($this->get_labels()) as $key) {
             $output['protections'][$key] = !empty($input['protections'][$key]) ? 1 : 0;
         }
         $output['excluded_post_types'] = isset($input['excluded_post_types']) ? array_map('sanitize_key', (array) $input['excluded_post_types']) : array();
-        $output['excluded_post_ids'] = isset($input['excluded_post_ids']) ? sanitize_text_field($input['excluded_post_ids']) : '';
+        $post_ids = isset($input['excluded_post_ids']) ? explode(',', sanitize_text_field($input['excluded_post_ids'])) : array();
+        $output['excluded_post_ids'] = implode(',', array_filter(array_map('absint', $post_ids)));
         $valid_roles = array_keys(wp_roles()->get_names());
-        $output['excluded_roles'] = isset($input['excluded_roles']) ? array_intersect((array) $input['excluded_roles'], $valid_roles) : array();
+        $roles = isset($input['excluded_roles']) ? array_map('sanitize_key', (array) $input['excluded_roles']) : array();
+        $output['excluded_roles'] = array_values(array_intersect($roles, $valid_roles));
         $output['show_message'] = !empty($input['show_message']) ? 1 : 0;
         $output['custom_message'] = isset($input['custom_message']) ? sanitize_text_field($input['custom_message']) : '';
         return $output;
@@ -70,7 +77,7 @@ class WPCP_Admin
     {
         if (!current_user_can('manage_options'))
             return;
-        $options = wpcp_get_options();
+        $options = wpcp_content_protector_get_options();
         ?>
             <div class="wrap">
                 <h1>WP Content Protector</h1>
@@ -87,6 +94,14 @@ class WPCP_Admin
                     <h2>Exclusions</h2>
                     <p>Exclude post/page IDs (comma-separated):<br>
                     <input type="text" name="wpcp_options[excluded_post_ids]" value="<?php echo esc_attr($options['excluded_post_ids']); ?>" class="regular-text" /></p>
+
+                    <p>Exclude post types:<br>
+                    <?php foreach (get_post_types(array('public' => true), 'objects') as $post_type): ?>
+                            <label style="display:inline-block;margin-right:12px;">
+                                <input type="checkbox" name="wpcp_options[excluded_post_types][]" value="<?php echo esc_attr($post_type->name); ?>" <?php checked(in_array($post_type->name, (array) $options['excluded_post_types'], true)); ?> />
+                                <?php echo esc_html($post_type->labels->name); ?>
+                            </label>
+                    <?php endforeach; ?></p>
 
                     <p>Exclude roles:<br>
                     <?php foreach (wp_roles()->get_names() as $role_key => $role_label): ?>
